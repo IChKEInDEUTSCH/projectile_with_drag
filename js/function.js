@@ -1,11 +1,9 @@
-let setBoundary = (percent = 6) => {
+let setValue = () => balls.forEach(ball => ball.setValue());
+
+let setBoundary = () => { // 設定座標偏移
     size = { w: windowWidth * 0.9, h: windowHeight * 0.95 };
     let temp = min(size.w, size.h);
-    boundary = temp * percent / 100;
-}
-
-let init = () => {
-    balls.forEach(ball => ball.init());
+    boundary = temp * 6 / 100;
 }
 
 let axis = () => {
@@ -13,15 +11,14 @@ let axis = () => {
     translate(boundary, size.h - boundary);
 
     let boardCount = size.w / (base * scale);
-    while (boardCount > 12) {
+    if (boardCount > 12) {
         base *= 2;
         boardCount /= 2;
-    }
-
-    while (boardCount < 7) {
+    } else if (boardCount < 6) {
         base /= 2;
         boardCount *= 2;
     }
+
     // 10 公尺軸
     stroke('rgb(80,0,0)');
     strokeWeight(1);
@@ -60,16 +57,36 @@ let axis = () => {
     pop();
 }
 
-function drawArrow(base, vec, myColor) {
+let drawArrow = (base, vec, color) => {
+    let arrowSize = 7;
     push();
-    stroke(myColor);
+    stroke(color);
     strokeWeight(3);
-    fill(myColor);
+    fill(color);
     translate(base.x, base.y);
     line(0, 0, vec.x, vec.y);
     rotate(vec.heading());
-    let arrowSize = 7;
     translate(vec.mag() - arrowSize, 0);
     triangle(0, arrowSize / 2, 0, -arrowSize / 2, arrowSize, 0);
     pop();
+}
+
+let createCsvFile = () => {
+    let fileName = "拋體運動.csv"; // 匯出的檔名
+    let data = getRandomData();
+    // "\ufeff" 解決亂碼問題
+    let blob = new Blob(["\ufeff" + data], { type: "application/octet-stream" });
+    let href = URL.createObjectURL(blob);
+    let link = document.createElement("a");
+    link.href = href;
+    link.download = fileName;
+    link.click();
+}
+
+// 資料生成
+let getRandomData = () => {
+    let parameter = balls[0].csv_parameter;
+    let header = "時間,速度（x）,速度（y）,位置（x）,位置（y）\n";
+    let data = `無空氣阻力\n${balls[1].csv}\n\n有空氣阻力\n${balls[0].csv}`;
+    return parameter + header + data;
 }
